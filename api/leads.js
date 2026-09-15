@@ -1,4 +1,5 @@
-import { deny, findRowByMaps, isAuthorized, jsonError, noStore, normalizeBool, rows, updateCell } from './_lib.js';
+import { deny, findRowByMaps, jsonError, noStore, normalizeBool, rows, updateCell } from './_lib.js';
+import { isAuthorized } from './_auth.js';
 
 export default async function handler(req, res) {
   noStore(res);
