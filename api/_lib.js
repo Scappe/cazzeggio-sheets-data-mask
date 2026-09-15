@@ -143,7 +143,7 @@ function parseCsv(text) {
 }
 
 async function publicRead() {
-  const url = `https://docs.google.com/spreadsheets/d/${encodeURIComponent(SHEET_ID)}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(SHEET_NAME)}`;
+  const url = `https://docs.google.com/spreadsheets/d/${encodeURIComponent(SHEET_ID)}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(SHEET_NAME)}&range=A:F`;
   const r = await fetch(url, { cache: 'no-store' });
   if (!r.ok) throw new Error(`sheet_public_${r.status}`);
   return parseCsv(await r.text());
@@ -152,7 +152,7 @@ async function publicRead() {
 async function apiRead() {
   const token = await googleAccessToken();
   if (!token) return publicRead();
-  const range = `'${SHEET_NAME.replace(/'/g, "''")}'!A:D`;
+  const range = `'${SHEET_NAME.replace(/'/g, "''")}'!A:F`;
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${encodeURIComponent(SHEET_ID)}/values/${encodeURIComponent(range)}`;
   const r = await fetch(url, { headers: { Authorization: `Bearer ${token}` }, cache: 'no-store' });
   if (!r.ok) throw new Error(`sheet_read_${r.status}`);
