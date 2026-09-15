@@ -1,0 +1,37 @@
+name: Safety CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Check serverless syntax
+        run: |
+          node --check api/_lib.js
+          node --check api/leads.js
+          node --check api/outcomes.js
+          node --check api/geocode.js
+      - name: Check inline browser JavaScript syntax
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const html = fs.readFileSync('index.html', 'utf8');
+          const scripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m => m[1]);
+          if (!scripts.length) throw new Error('No inline script found');
+          for (const code of scripts) new Function(code);
+          console.log(`Parsed ${scripts.length} inline script block(s)`);
+          NODE
+      - name: Reject hardcoded access URL
+        run: |
+          if grep -R --exclude-dir=.git -En '\?k=[[:xdigit:]]{32,}' .; then
+            echo 'Possible hardcoded access key found.'
+            exit 1
+          fi

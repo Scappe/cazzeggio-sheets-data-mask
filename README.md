@@ -7,22 +7,40 @@ Sorgente canonica della web app `axante-lead-mask`.
 - La produzione deve restare accessibile senza login Vercel.
 - L’accesso ai dati è consentito solo con una `k` valida.
 - La chiave non va mai hardcodata nel frontend o nel repository: deve restare una variabile d’ambiente lato server.
-- Senza `k`, o con `k` errata, la pagina deve mostrare esclusivamente:
+- Senza `k`, o con `k` errata, la pagina mostra esclusivamente:
 
   **Hai fatto qualcosa di strano…**  
   **Contatta il tuo referente.**
 
-- In stato non autorizzato non devono partire richieste ai dati, inizializzarsi la mappa o comparire elementi della web app.
-- Tutte le API private devono continuare a rifiutare richieste non autorizzate lato server.
+- Senza chiave valida non vengono inizializzate mappa, lista lead o azioni della web app.
+- `/api/leads`, `/api/outcomes` e `/api/geocode` rifiutano lato server le richieste non autorizzate.
 
-## Stato
+## Dati
 
-Il deployment di produzione sicuro esiste già su Vercel. Questo repository non va collegato/deployato in produzione finché non sono stati riversati qui anche i sorgenti delle API correnti, per evitare di rompere `/api/leads`, `/api/outcomes` e `/api/geocode`.
+Il foglio collegato è `1R5m6-tF96Fptt01QU5B_yDesKnuYLJBFLTbLFOIWqsQ`, tab `Foglio1`:
+
+- A: Nome
+- B: Link Maps
+- C: Contattato
+- D: Esito
+
+La lettura può usare Google Sheets API e, solo come fallback read-only, il CSV pubblico. Le scritture richiedono credenziali Google lato server.
+
+Variabili supportate per la chiave di accesso: `LEAD_MASK_KEY`, `MASK_KEY`, `ACCESS_KEY`, `APP_KEY`, `AUTH_KEY`, `DATA_MASK_KEY`.
+
+Credenziali Google supportate: JSON service account (`GOOGLE_SERVICE_ACCOUNT_JSON` / `GOOGLE_CREDENTIALS` / `GOOGLE_SERVICE_ACCOUNT_KEY`) oppure email + private key (`GOOGLE_SERVICE_ACCOUNT_EMAIL` + `GOOGLE_PRIVATE_KEY`, con alias compatibili nel codice).
 
 ## UI
 
-Mantenere le correzioni correnti:
+Sono mantenute le correzioni correnti:
 
 - testo `.roast` sempre con sfondo trasparente;
 - colori di stato applicati soltanto ai pin della mappa;
-- comportamento e dati della web app invariati quando la `k` è valida.
+- accesso tramite `?k=`;
+- mappa, ricerca, ordinamento per distanza, stati e battute.
+
+## Rollout
+
+**Non promuovere direttamente su produzione.** Prima si crea e verifica una preview con le stesse variabili d’ambiente del progetto Vercel esistente. Solo dopo aver verificato lettura foglio, geocoding e una scrittura di test si promuove il deployment.
+
+La produzione attuale resta intatta finché questa verifica non è completata.
