@@ -18,6 +18,16 @@ export default async function handler(req, res) {
       "L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'Tiles &copy; Esri'}).addTo(map);"
     );
 
+    html = html.replace(
+      "async function gc(x){if(geo.has(x.maps))return geo.get(x.maps);",
+      "async function gc(x){if(Number.isFinite(x.lat)&&Number.isFinite(x.lon))return{lat:x.lat,lon:x.lon};if(geo.has(x.maps))return geo.get(x.maps);"
+    );
+
+    html = html.replace(
+      "fetch('/api/geocode?k='+encodeURIComponent(K)+'&q='+encodeURIComponent(z))",
+      "fetch('/api/geocode?k='+encodeURIComponent(K)+'&q='+encodeURIComponent(z)+'&maps='+encodeURIComponent(x.maps))"
+    );
+
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.setHeader('Cache-Control', 'no-store, max-age=0');
     res.setHeader('X-Robots-Tag', 'noindex, nofollow, noarchive');
