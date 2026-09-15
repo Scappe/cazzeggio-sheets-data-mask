@@ -1,4 +1,5 @@
-import { deny, isAuthorized, jsonError, noStore } from './_lib.js';
+import { deny, jsonError, noStore } from './_lib.js';
+import { isAuthorized } from './_auth.js';
 
 const ROME_VIEWBOX = '12.39,41.94,12.57,41.79';
 
