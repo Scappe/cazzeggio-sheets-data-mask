@@ -1,4 +1,4 @@
-import { deny, jsonError, noStore } from './_lib.js';
+import { deny, findRowByMaps, jsonError, noStore, updateCell } from './_lib.js';
 import { isAuthorized } from './_auth.js';
 
 const ROME_VIEWBOX = '12.39,41.94,12.57,41.79';
@@ -12,6 +12,7 @@ export default async function handler(req, res) {
   }
 
   const q = String(req.query?.q || '').trim();
+  const maps = String(req.query?.maps || '').trim();
   if (!q) return jsonError(res, 400, 'q_required');
 
   try {
@@ -38,6 +39,16 @@ export default async function handler(req, res) {
     const lat = Number(data[0].lat);
     const lon = Number(data[0].lon);
     if (!Number.isFinite(lat) || !Number.isFinite(lon)) return jsonError(res, 404, 'not_found');
+
+    if (maps) {
+      try {
+        const row = await findRowByMaps(maps);
+        if (row) await Promise.all([updateCell(row, 'E', lat), updateCell(row, 'F', lon)]);
+      } catch (e) {
+        console.warn('coordinate_cache_write_failed', e?.message || e);
+      }
+    }
+
     return res.status(200).json({ lat, lon });
   } catch (e) {
     console.error('geocode_api_error', e?.message || e);
