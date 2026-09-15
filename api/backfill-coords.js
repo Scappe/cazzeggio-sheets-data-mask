@@ -49,27 +49,32 @@ export default async function handler(req, res) {
 
   const offset = Math.max(0, Number(req.query?.offset || 0) | 0);
   const limit = Math.min(35, Math.max(1, Number(req.query?.limit || 25) | 0));
+  const dry = String(req.query?.dry || '') === '1';
 
   try {
     const values = await rows();
     const dataRows = values.slice(1).map((row, i) => ({ row, sheetRow: i + 2 })).filter(x => x.row?.[0] && x.row?.[1]);
     const batch = dataRows.slice(offset, offset + limit);
 
-    if (offset === 0) {
+    if (!dry && offset === 0) {
       await Promise.all([updateCell(1, 'E', 'Lat'), updateCell(1, 'F', 'Lon')]);
     }
 
     let saved = 0;
     const failed = [];
+    const results = [];
     for (let i = 0; i < batch.length; i++) {
       const item = batch[i];
       const [name, maps] = item.row;
       try {
         const { lat, lon } = await geocode(queryFromMaps(maps, name));
-        await Promise.all([
-          updateCell(item.sheetRow, 'E', lat),
-          updateCell(item.sheetRow, 'F', lon),
-        ]);
+        results.push({ row: item.sheetRow, name: String(name), lat, lon });
+        if (!dry) {
+          await Promise.all([
+            updateCell(item.sheetRow, 'E', lat),
+            updateCell(item.sheetRow, 'F', lon),
+          ]);
+        }
         saved++;
       } catch (e) {
         failed.push({ row: item.sheetRow, name: String(name), error: String(e?.message || e) });
@@ -79,10 +84,12 @@ export default async function handler(req, res) {
 
     return res.status(200).json({
       ok: true,
+      dry,
       offset,
       processed: batch.length,
       saved,
       failed,
+      results,
       nextOffset: offset + batch.length,
       total: dataRows.length,
       done: offset + batch.length >= dataRows.length,
