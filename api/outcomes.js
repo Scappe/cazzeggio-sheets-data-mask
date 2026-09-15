@@ -1,4 +1,5 @@
-import { deny, findRowByMaps, isAuthorized, jsonError, noStore, rows, updateCell } from './_lib.js';
+import { deny, findRowByMaps, jsonError, noStore, rows, updateCell } from './_lib.js';
+import { isAuthorized } from './_auth.js';
 
 const ALLOWED = new Set(['interested', 'not_interested', 'callback']);
 
